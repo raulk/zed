@@ -20211,6 +20211,46 @@ impl Editor {
         .detach();
     }
 
+    pub fn pool_open_tabs_into_multibuffer(
+        &mut self,
+        _: &PoolOpenTabsIntoMultibuffer,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let Some(workspace) = self.workspace() else {
+            return;
+        };
+
+        cx.spawn_in(window, async move |_, cx| {
+            workspace.update_in(cx, |workspace, window, cx| {
+                let mut locations = std::collections::HashMap::new();
+                
+                for editor in workspace.items_of_type::<Editor>(cx) {
+                    if let Some(buffer) = editor.read(cx).buffer().read(cx).as_singleton() {
+                        let full_range = {
+                            let buffer_snapshot = buffer.read(cx).snapshot();
+                            Point::zero()..buffer_snapshot.max_point()
+                        };
+                        locations.entry(buffer.clone()).or_insert_with(Vec::new).push(full_range);
+                    }
+                }
+
+                if !locations.is_empty() {
+                    Self::open_locations_in_multibuffer(
+                        workspace,
+                        locations,
+                        "All Open Tabs".to_string(),
+                        false,
+                        MultibufferSelectionMode::First,
+                        window,
+                        cx,
+                    );
+                }
+            })
+        })
+        .detach();
+    }
+
     /// Adds a row highlight for the given range. If a row has multiple highlights, the
     /// last highlight added will be used.
     ///

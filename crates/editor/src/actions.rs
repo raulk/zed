@@ -640,6 +640,8 @@ actions!(
         OpenSelectedFilename,
         /// Opens all selections in a multibuffer.
         OpenSelectionsInMultibuffer,
+        /// Pools all open tabs into a new multibuffer.
+        PoolOpenTabsIntoMultibuffer,
         /// Opens the URL at cursor position.
         OpenUrl,
         /// Organizes import statements.
