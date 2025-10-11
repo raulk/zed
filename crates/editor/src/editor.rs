@@ -328,6 +328,7 @@ pub fn init(cx: &mut App) {
             workspace.register_action(Editor::new_file_horizontal);
             workspace.register_action(Editor::cancel_language_server_work);
             workspace.register_action(Editor::toggle_focus);
+            workspace.register_action(Editor::pool_open_tabs_into_multibuffer);
         },
     )
     .detach();
@@ -20212,43 +20213,34 @@ impl Editor {
     }
 
     pub fn pool_open_tabs_into_multibuffer(
-        &mut self,
+        workspace: &mut Workspace,
         _: &PoolOpenTabsIntoMultibuffer,
         window: &mut Window,
-        cx: &mut Context<Self>,
+        cx: &mut Context<Workspace>,
     ) {
-        let Some(workspace) = self.workspace() else {
-            return;
-        };
+        let mut locations = std::collections::HashMap::new();
+        
+        for editor in workspace.items_of_type::<Editor>(cx) {
+            if let Some(buffer) = editor.read(cx).buffer().read(cx).as_singleton() {
+                let full_range = {
+                    let buffer_snapshot = buffer.read(cx).snapshot();
+                    Point::zero()..buffer_snapshot.max_point()
+                };
+                locations.entry(buffer.clone()).or_insert_with(Vec::new).push(full_range);
+            }
+        }
 
-        cx.spawn_in(window, async move |_, cx| {
-            workspace.update_in(cx, |workspace, window, cx| {
-                let mut locations = std::collections::HashMap::new();
-                
-                for editor in workspace.items_of_type::<Editor>(cx) {
-                    if let Some(buffer) = editor.read(cx).buffer().read(cx).as_singleton() {
-                        let full_range = {
-                            let buffer_snapshot = buffer.read(cx).snapshot();
-                            Point::zero()..buffer_snapshot.max_point()
-                        };
-                        locations.entry(buffer.clone()).or_insert_with(Vec::new).push(full_range);
-                    }
-                }
-
-                if !locations.is_empty() {
-                    Self::open_locations_in_multibuffer(
-                        workspace,
-                        locations,
-                        "All Open Tabs".to_string(),
-                        false,
-                        MultibufferSelectionMode::First,
-                        window,
-                        cx,
-                    );
-                }
-            })
-        })
-        .detach();
+        if !locations.is_empty() {
+            Self::open_locations_in_multibuffer(
+                workspace,
+                locations,
+                "All Open Tabs".to_string(),
+                false,
+                MultibufferSelectionMode::First,
+                window,
+                cx,
+            );
+        }
     }
 
     /// Adds a row highlight for the given range. If a row has multiple highlights, the
