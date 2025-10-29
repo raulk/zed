@@ -9,10 +9,12 @@ use gpui::{
     AbsoluteLength, AnyElement, App, AppContext as _, ClipboardItem, Context, DefiniteLength, Div,
     Element, ElementId, Entity, HighlightStyle, Hsla, ImageSource, InteractiveText, IntoElement,
     Keystroke, Length, Modifiers, ParentElement, Pixels, Render, Resource, SharedString, Styled,
-    StyledText, TextStyle, WeakEntity, Window, div, img, px, rems,
+    StyledText, TextStyle, WeakEntity, Window, div, img, px, rems, svg,
 };
 use settings::Settings;
 use std::{
+    fs::File,
+    io::Write,
     ops::{Mul, Range},
     sync::Arc,
     vec,
@@ -924,45 +926,41 @@ fn render_markdown_math_block(
     }
 }
 
-fn render_math_svg(svg_content: &str, cx: &mut RenderContext) -> Div {
-    // For now, we'll use a simple approach: render the SVG content as HTML
-    // GPUI's svg() function expects file paths, not raw SVG content
-    // We could save to temp files, but for simplicity, we'll create a styled div
-    // that contains a label with the SVG dimensions extracted
-    
-    // Extract dimensions from SVG if possible
-    let (width, height) = extract_svg_dimensions(svg_content).unwrap_or((px(200.0), px(50.0)));
-    
-    // Create a div that represents the math expression
-    // In a real implementation, we'd need to either:
-    // 1. Save SVG to a temp file and use svg().path()
-    // 2. Use a custom element that can render raw SVG
-    // 3. Use GPUI's canvas/painting APIs directly
-    div()
-        .w(DefiniteLength::Absolute(AbsoluteLength::Pixels(width)))
-        .h(DefiniteLength::Absolute(AbsoluteLength::Pixels(height)))
-        .bg(cx.element_background_color)
-        .border_1()
-        .border_color(cx.border_color)
-        .flex()
-        .items_center()
-        .justify_center()
-        .child(Label::new("[Math Expression]").size(LabelSize::Small).color(Color::Muted))
+fn render_math_svg(svg_content: &str, cx: &mut RenderContext) -> AnyElement {
+    // Save SVG to a temporary file and use GPUI's svg().path()
+    match save_svg_to_temp(svg_content) {
+        Ok(temp_path) => {
+            svg()
+                .path(temp_path.to_string_lossy().to_string())
+                .text_color(cx.text_color)
+                .into_any()
+        }
+        Err(err) => {
+            log::warn!("Failed to save SVG to temp file: {}", err);
+            // Fallback: show a placeholder
+            div()
+                .bg(cx.element_background_color)
+                .border_1()
+                .border_color(cx.border_color)
+                .px_2()
+                .py_1()
+                .child(Label::new("[Math Render Error]").size(LabelSize::Small).color(Color::Muted))
+                .into_any()
+        }
+    }
 }
 
-fn extract_svg_dimensions(svg: &str) -> Option<(Pixels, Pixels)> {
-    // Simple regex-free parsing to extract width and height
-    let width_start = svg.find("width=\"")?;
-    let width_end = svg[width_start + 7..].find("\"")?;
-    let width_str = &svg[width_start + 7..width_start + 7 + width_end];
+fn save_svg_to_temp(svg_content: &str) -> anyhow::Result<std::path::PathBuf> {
+    use std::io::Write;
     
-    let height_start = svg.find("height=\"")?;
-    let height_end = svg[height_start + 8..].find("\"")?;
-    let height_str = &svg[height_start + 8..height_start + 8 + height_end];
+    // Create a temporary file with .svg extension
+    let temp_dir = std::env::temp_dir();
+    let file_name = format!("zed_math_{}.svg", uuid::Uuid::new_v4());
+    let temp_path = temp_dir.join(file_name);
     
-    let width = width_str.trim_end_matches("ex").parse::<f32>().ok()?;
-    let height = height_str.trim_end_matches("ex").parse::<f32>().ok()?;
+    let mut file = File::create(&temp_path)?;
+    file.write_all(svg_content.as_bytes())?;
+    file.flush()?;
     
-    // Convert ex units to pixels (approximate)
-    Some((px(width * 8.0), px(height * 8.0)))
+    Ok(temp_path)
 }
