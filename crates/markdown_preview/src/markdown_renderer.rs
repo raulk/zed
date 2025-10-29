@@ -8,11 +8,13 @@ use fs::normalize_path;
 use gpui::{
     AbsoluteLength, AnyElement, App, AppContext as _, ClipboardItem, Context, DefiniteLength, Div,
     Element, ElementId, Entity, HighlightStyle, Hsla, ImageSource, InteractiveText, IntoElement,
-    Keystroke, Length, Modifiers, ParentElement, Render, Resource, SharedString, Styled,
-    StyledText, TextStyle, WeakEntity, Window, div, img, rems,
+    Keystroke, Length, Modifiers, ParentElement, Pixels, Render, Resource, SharedString, Styled,
+    StyledText, TextStyle, WeakEntity, Window, div, img, px, rems, svg,
 };
 use settings::Settings;
 use std::{
+    fs::File,
+    io::Write,
     ops::{Mul, Range},
     sync::Arc,
     vec,
@@ -20,7 +22,7 @@ use std::{
 use theme::{ActiveTheme, SyntaxTheme, ThemeSettings};
 use ui::{
     ButtonCommon, Clickable, Color, FluentBuilder, IconButton, IconName, IconSize,
-    InteractiveElement, Label, LabelCommon, LabelSize, LinkPreview, Pixels, Rems,
+    InteractiveElement, Label, LabelCommon, LabelSize, LinkPreview, Rems,
     StatefulInteractiveElement, StyledExt, StyledImage, ToggleState, Tooltip, VisibleOnHover,
     h_flex, relative, tooltip_container, v_flex,
 };
@@ -169,6 +171,7 @@ pub fn render_markdown_block(block: &ParsedMarkdownElement, cx: &mut RenderConte
         CodeBlock(code_block) => render_markdown_code_block(code_block, cx),
         HorizontalRule(_) => render_markdown_rule(cx),
         Image(image) => render_markdown_image(image, cx),
+        MathBlock(math) => render_markdown_math_block(math, cx),
     }
 }
 
@@ -750,6 +753,10 @@ fn render_markdown_text(parsed_new: &MarkdownParagraph, cx: &mut RenderContext) 
             MarkdownParagraphChunk::Image(image) => {
                 any_element.push(render_markdown_image(image, cx));
             }
+
+            MarkdownParagraphChunk::InlineMath(math) => {
+                any_element.push(render_markdown_inline_math(math, cx));
+            }
         }
     }
 
@@ -870,4 +877,90 @@ impl Render for InteractiveMarkdownElementTooltip {
             )
         })
     }
+}
+
+fn render_markdown_inline_math(
+    math: &crate::markdown_elements::ParsedMarkdownMath,
+    cx: &mut RenderContext,
+) -> AnyElement {
+    let element_id = cx.next_id(&math.source_range);
+
+    if let Some(svg) = &math.svg {
+        div()
+            .id(element_id)
+            .child(render_math_svg(svg.as_ref(), cx))
+            .into_any()
+    } else {
+        // Fallback: render the raw LaTeX in a monospace font
+        div()
+            .id(element_id)
+            .font_family(cx.buffer_font_family.clone())
+            .child(format!("${}$", math.contents))
+            .text_color(cx.text_muted_color)
+            .into_any()
+    }
+}
+
+fn render_markdown_math_block(
+    math: &crate::markdown_elements::ParsedMarkdownMathBlock,
+    cx: &mut RenderContext,
+) -> AnyElement {
+    if let Some(svg) = &math.svg {
+        cx.with_common_p(div())
+            .flex()
+            .justify_center()
+            .py_2()
+            .child(render_math_svg(svg.as_ref(), cx))
+            .into_any()
+    } else {
+        // Fallback: render the raw LaTeX in a monospace font
+        cx.with_common_p(div())
+            .font_family(cx.buffer_font_family.clone())
+            .px_3()
+            .py_3()
+            .bg(cx.code_block_background_color)
+            .rounded_sm()
+            .child(format!("$$\n{}\n$$", math.contents))
+            .text_color(cx.text_muted_color)
+            .into_any()
+    }
+}
+
+fn render_math_svg(svg_content: &str, cx: &mut RenderContext) -> AnyElement {
+    // Save SVG to a temporary file and use GPUI's svg().path()
+    match save_svg_to_temp(svg_content) {
+        Ok(temp_path) => {
+            svg()
+                .path(temp_path.to_string_lossy().to_string())
+                .text_color(cx.text_color)
+                .into_any()
+        }
+        Err(err) => {
+            log::warn!("Failed to save SVG to temp file: {}", err);
+            // Fallback: show a placeholder
+            div()
+                .bg(cx.element_background_color)
+                .border_1()
+                .border_color(cx.border_color)
+                .px_2()
+                .py_1()
+                .child(Label::new("[Math Render Error]").size(LabelSize::Small).color(Color::Muted))
+                .into_any()
+        }
+    }
+}
+
+fn save_svg_to_temp(svg_content: &str) -> anyhow::Result<std::path::PathBuf> {
+    use std::io::Write;
+    
+    // Create a temporary file with .svg extension
+    let temp_dir = std::env::temp_dir();
+    let file_name = format!("zed_math_{}.svg", uuid::Uuid::new_v4());
+    let temp_path = temp_dir.join(file_name);
+    
+    let mut file = File::create(&temp_path)?;
+    file.write_all(svg_content.as_bytes())?;
+    file.flush()?;
+    
+    Ok(temp_path)
 }

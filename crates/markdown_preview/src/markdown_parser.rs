@@ -1,6 +1,7 @@
 use crate::{
     markdown_elements::*,
     markdown_minifier::{Minifier, MinifierOptions},
+    math_renderer,
 };
 use async_recursion::async_recursion;
 use collections::FxHashMap;
@@ -26,9 +27,13 @@ pub async fn parse_markdown(
         language_registry,
     );
     let renderer = parser.parse_document().await;
-    ParsedMarkdown {
-        children: renderer.parsed,
-    }
+    
+    // Process math expressions
+    let mut children = renderer.parsed;
+    children = math_renderer::extract_block_math(children);
+    children = math_renderer::process_math_expressions(children);
+    
+    ParsedMarkdown { children }
 }
 
 fn cleanup_html(source: &str) -> Vec<u8> {

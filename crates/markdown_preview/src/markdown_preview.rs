@@ -6,6 +6,7 @@ mod markdown_minifier;
 pub mod markdown_parser;
 pub mod markdown_preview_view;
 pub mod markdown_renderer;
+mod math_renderer;
 
 actions!(
     markdown,
