@@ -3,7 +3,6 @@ use crate::markdown_elements::{
     ParsedMarkdownMathBlock, ParsedMarkdownText,
 };
 use gpui::SharedString;
-use std::ops::Range;
 
 /// Process markdown elements to extract and render math expressions
 pub fn process_math_expressions(elements: Vec<ParsedMarkdownElement>) -> Vec<ParsedMarkdownElement> {

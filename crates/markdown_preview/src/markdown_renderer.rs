@@ -8,8 +8,8 @@ use fs::normalize_path;
 use gpui::{
     AbsoluteLength, AnyElement, App, AppContext as _, ClipboardItem, Context, DefiniteLength, Div,
     Element, ElementId, Entity, HighlightStyle, Hsla, ImageSource, InteractiveText, IntoElement,
-    Keystroke, Length, Modifiers, ParentElement, Render, Resource, SharedString, Styled,
-    StyledText, TextStyle, WeakEntity, Window, div, img, rems,
+    Keystroke, Length, Modifiers, ParentElement, Pixels, Render, Resource, SharedString, Styled,
+    StyledText, TextStyle, WeakEntity, Window, div, img, px, rems,
 };
 use settings::Settings;
 use std::{
@@ -20,7 +20,7 @@ use std::{
 use theme::{ActiveTheme, SyntaxTheme, ThemeSettings};
 use ui::{
     ButtonCommon, Clickable, Color, FluentBuilder, IconButton, IconName, IconSize,
-    InteractiveElement, Label, LabelCommon, LabelSize, LinkPreview, Pixels, Rems,
+    InteractiveElement, Label, LabelCommon, LabelSize, LinkPreview, Rems,
     StatefulInteractiveElement, StyledExt, StyledImage, ToggleState, Tooltip, VisibleOnHover,
     h_flex, relative, tooltip_container, v_flex,
 };
@@ -924,10 +924,45 @@ fn render_markdown_math_block(
     }
 }
 
-fn render_math_svg(svg_content: &str, _cx: &mut RenderContext) -> Div {
-    use gpui::svg;
+fn render_math_svg(svg_content: &str, cx: &mut RenderContext) -> Div {
+    // For now, we'll use a simple approach: render the SVG content as HTML
+    // GPUI's svg() function expects file paths, not raw SVG content
+    // We could save to temp files, but for simplicity, we'll create a styled div
+    // that contains a label with the SVG dimensions extracted
     
-    // The SVG from mathjax_svg should be a complete SVG string
-    // We can display it using GPUI's svg rendering
-    div().child(svg().from_source(svg_content))
+    // Extract dimensions from SVG if possible
+    let (width, height) = extract_svg_dimensions(svg_content).unwrap_or((px(200.0), px(50.0)));
+    
+    // Create a div that represents the math expression
+    // In a real implementation, we'd need to either:
+    // 1. Save SVG to a temp file and use svg().path()
+    // 2. Use a custom element that can render raw SVG
+    // 3. Use GPUI's canvas/painting APIs directly
+    div()
+        .w(DefiniteLength::Absolute(AbsoluteLength::Pixels(width)))
+        .h(DefiniteLength::Absolute(AbsoluteLength::Pixels(height)))
+        .bg(cx.element_background_color)
+        .border_1()
+        .border_color(cx.border_color)
+        .flex()
+        .items_center()
+        .justify_center()
+        .child(Label::new("[Math Expression]").size(LabelSize::Small).color(Color::Muted))
+}
+
+fn extract_svg_dimensions(svg: &str) -> Option<(Pixels, Pixels)> {
+    // Simple regex-free parsing to extract width and height
+    let width_start = svg.find("width=\"")?;
+    let width_end = svg[width_start + 7..].find("\"")?;
+    let width_str = &svg[width_start + 7..width_start + 7 + width_end];
+    
+    let height_start = svg.find("height=\"")?;
+    let height_end = svg[height_start + 8..].find("\"")?;
+    let height_str = &svg[height_start + 8..height_start + 8 + height_end];
+    
+    let width = width_str.trim_end_matches("ex").parse::<f32>().ok()?;
+    let height = height_str.trim_end_matches("ex").parse::<f32>().ok()?;
+    
+    // Convert ex units to pixels (approximate)
+    Some((px(width * 8.0), px(height * 8.0)))
 }
