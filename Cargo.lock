@@ -181,7 +181,7 @@ dependencies = [
  "telemetry",
  "text",
  "theme",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
  "uuid",
  "workspace",
@@ -267,7 +267,7 @@ dependencies = [
  "terminal",
  "text",
  "theme",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "tree-sitter-rust",
  "ui",
  "unindent",
@@ -317,7 +317,7 @@ dependencies = [
  "task",
  "tempfile",
  "terminal",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "ui",
  "uuid",
  "watch",
@@ -664,7 +664,7 @@ dependencies = [
  "serde_json",
  "settings",
  "strum 0.27.1",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "workspace-hack",
  "zed-http-client",
 ]
@@ -677,9 +677,9 @@ checksum = "34cd60c5e3152cef0a592f1b296f1cc93715d89d2551d85315828c3a09575ff4"
 
 [[package]]
 name = "anyhow"
-version = "1.0.98"
+version = "1.0.100"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
+checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
 name = "approx"
@@ -1417,7 +1417,7 @@ dependencies = [
  "serde",
  "settings",
  "smol",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "workspace-hack",
  "zed-collections",
  "zed-util",
@@ -2152,7 +2152,7 @@ dependencies = [
  "serde",
  "serde_json",
  "strum 0.27.1",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "workspace-hack",
 ]
 
@@ -2225,6 +2225,26 @@ name = "bindgen"
 version = "0.71.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f58bf3d7db68cfbac37cfc485a8d711e87e064c3d0fe0435b92f7a407f9d6b3"
+dependencies = [
+ "bitflags 2.9.0",
+ "cexpr",
+ "clang-sys",
+ "itertools 0.13.0",
+ "log",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "rustc-hash 2.1.1",
+ "shlex",
+ "syn 2.0.101",
+]
+
+[[package]]
+name = "bindgen"
+version = "0.72.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "993776b509cfb49c750f11b8f07a46fa23e0a1386ffc01fb1e7d343efc387895"
 dependencies = [
  "bitflags 2.9.0",
  "cexpr",
@@ -2644,7 +2664,7 @@ dependencies = [
  "cached_proc_macro_types",
  "hashbrown 0.15.3",
  "once_cell",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "web-time",
 ]
 
@@ -2872,7 +2892,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
@@ -3193,7 +3213,7 @@ dependencies = [
  "telemetry",
  "telemetry_events",
  "text",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
  "tiny_http",
  "tokio",
@@ -3561,7 +3581,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2ec1052629a80c28594777d1252efc8a6b005d13f9edfd8c3fc0f44d5b32489a"
 dependencies = [
  "nix 0.30.1",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
@@ -4780,7 +4800,7 @@ dependencies = [
  "realfft",
  "rodio",
  "rustfft",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "workspace-hack",
 ]
 
@@ -6326,6 +6346,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "fslock"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04412b8935272e3a9bae6f48c7bfff74c2911f60525404edfdd28e49884c3bfb"
+dependencies = [
+ "libc",
+ "winapi",
+]
+
+[[package]]
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6848,7 +6878,7 @@ dependencies = [
  "smol",
  "tempfile",
  "text",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
  "unindent",
  "url",
@@ -7144,7 +7174,7 @@ dependencies = [
  "stacksafe",
  "strum 0.27.1",
  "taffy",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "unicode-segmentation",
  "usvg",
  "uuid",
@@ -7213,6 +7243,15 @@ dependencies = [
  "ff",
  "rand_core 0.6.4",
  "subtle",
+]
+
+[[package]]
+name = "gzip-header"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95cc527b92e6029a62960ad99aa8a6660faa4555fe5f731aab13aa6a921795a2"
+dependencies = [
+ "crc32fast",
 ]
 
 [[package]]
@@ -8703,7 +8742,7 @@ dependencies = [
  "settings",
  "smol",
  "telemetry_events",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "workspace-hack",
  "zed-collections",
  "zed-http-client",
@@ -8753,7 +8792,7 @@ dependencies = [
  "settings",
  "smol",
  "strum 0.27.1",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "tiktoken-rs",
  "tokio",
  "ui",
@@ -8990,7 +9029,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -9497,6 +9536,7 @@ dependencies = [
  "linkify",
  "log",
  "markup5ever_rcdom",
+ "mathjax_svg",
  "pretty_assertions",
  "pulldown-cmark 0.12.2",
  "settings",
@@ -9570,6 +9610,17 @@ name = "matchit"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e7465ac9959cc2b1404e8e2367b43684a6d13790fe23056cc8c6c5a6b7bcb94"
+
+[[package]]
+name = "mathjax_svg"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad495ba668b38f70fa36349e597df582caf9055949b1dde96cce646e67c93e1c"
+dependencies = [
+ "anyhow",
+ "thiserror 2.0.17",
+ "v8",
+]
 
 [[package]]
 name = "maybe-owned"
@@ -9947,7 +9998,7 @@ dependencies = [
  "rustc-hash 1.1.0",
  "spirv",
  "strum 0.26.3",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "unicode-ident",
 ]
 
@@ -10734,7 +10785,7 @@ dependencies = [
  "serde_json",
  "settings",
  "strum 0.27.1",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "workspace-hack",
  "zed-http-client",
 ]
@@ -11191,7 +11242,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "198db74531d58c70a361c42201efde7e2591e976d518caf7662a47dc5720e7b6"
 dependencies = [
  "memchr",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "ucd-trie",
 ]
 
@@ -12221,7 +12272,7 @@ dependencies = [
  "memchr",
  "parking_lot",
  "protobuf",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
@@ -12542,7 +12593,7 @@ dependencies = [
  "rustc-hash 2.1.1",
  "rustls 0.23.26",
  "socket2",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "tokio",
  "tracing",
  "web-time",
@@ -12562,7 +12613,7 @@ dependencies = [
  "rustls 0.23.26",
  "rustls-pki-types",
  "slab",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "tinyvec",
  "tracing",
  "web-time",
@@ -12895,7 +12946,7 @@ checksum = "dd6f9d3d47bdd2ad6945c5015a226ec6155d0bcdfd8f7cd29f86b71f8de99d2b"
 dependencies = [
  "getrandom 0.2.15",
  "libredox",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
@@ -13012,7 +13063,7 @@ dependencies = [
  "shlex",
  "smol",
  "tempfile",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "urlencoding",
  "which 6.0.3",
  "workspace-hack",
@@ -13075,7 +13126,7 @@ dependencies = [
  "shellexpand 2.1.2",
  "smol",
  "sysinfo",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "toml 0.8.20",
  "unindent",
  "watch",
@@ -13370,7 +13421,7 @@ dependencies = [
  "num-rational",
  "rtrb",
  "symphonia",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
@@ -14047,7 +14098,7 @@ dependencies = [
  "serde_json",
  "sqlx",
  "strum 0.26.3",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
  "tracing",
  "url",
@@ -14629,7 +14680,7 @@ checksum = "297f631f50729c8c99b84667867963997ec0b50f32b2a7dbcab828ef0541e8bb"
 dependencies = [
  "num-bigint",
  "num-traits",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
 ]
 
@@ -14932,7 +14983,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "smallvec",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
  "tokio",
  "tokio-stream",
@@ -15021,7 +15072,7 @@ dependencies = [
  "smallvec",
  "sqlx-core",
  "stringprep",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
  "tracing",
  "uuid",
@@ -15064,7 +15115,7 @@ dependencies = [
  "smallvec",
  "sqlx-core",
  "stringprep",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
  "tracing",
  "uuid",
@@ -15091,7 +15142,7 @@ dependencies = [
  "serde",
  "serde_urlencoded",
  "sqlx-core",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
  "tracing",
  "url",
@@ -16029,7 +16080,7 @@ dependencies = [
  "sysinfo",
  "task",
  "theme",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "url",
  "urlencoding",
  "windows 0.61.1",
@@ -16128,7 +16179,7 @@ dependencies = [
  "serde_json_lenient",
  "settings",
  "strum 0.27.1",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "uuid",
  "workspace-hack",
  "zed-collections",
@@ -16200,11 +16251,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.12"
+version = "2.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+checksum = "f63587ca0f12b72a0600bcba1d40081f830876000bb46dd2337a3051618f4fc8"
 dependencies = [
- "thiserror-impl 2.0.12",
+ "thiserror-impl 2.0.17",
 ]
 
 [[package]]
@@ -16220,9 +16271,9 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.12"
+version = "2.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
+checksum = "3ff15c8ecd7de3849db632e14d18d2571fa09dfc5ed93479bc4485c7a517c913"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -17139,7 +17190,7 @@ dependencies = [
  "rustls 0.23.26",
  "rustls-pki-types",
  "sha1",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "utf-8",
 ]
 
@@ -17474,6 +17525,22 @@ dependencies = [
  "outref",
  "uuid",
  "vsimd",
+]
+
+[[package]]
+name = "v8"
+version = "139.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a33ccf9cc537275d7bb848e94f160986164e2ea5138e60166551d115c7ea8f1a"
+dependencies = [
+ "bindgen 0.72.1",
+ "bitflags 2.9.0",
+ "fslock",
+ "gzip-header",
+ "home",
+ "miniz_oxide",
+ "paste",
+ "which 6.0.3",
 ]
 
 [[package]]
@@ -18609,7 +18676,7 @@ dependencies = [
  "ctrlc",
  "parking_lot",
  "rayon",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "windows 0.61.1",
  "windows-future",
 ]
@@ -19695,7 +19762,7 @@ dependencies = [
  "syn 1.0.109",
  "syn 2.0.101",
  "sync_wrapper 1.0.2",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "time",
  "time-macros",
  "tokio",
@@ -20748,7 +20815,7 @@ dependencies = [
  "telemetry",
  "telemetry_events",
  "theme",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "tree-sitter-go",
  "tree-sitter-rust",
  "ui",
@@ -20788,7 +20855,7 @@ dependencies = [
  "release_channel",
  "serde_json",
  "settings",
- "thiserror 2.0.12",
+ "thiserror 2.0.17",
  "uuid",
  "workspace",
  "workspace-hack",

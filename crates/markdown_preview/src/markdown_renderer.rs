@@ -169,6 +169,7 @@ pub fn render_markdown_block(block: &ParsedMarkdownElement, cx: &mut RenderConte
         CodeBlock(code_block) => render_markdown_code_block(code_block, cx),
         HorizontalRule(_) => render_markdown_rule(cx),
         Image(image) => render_markdown_image(image, cx),
+        MathBlock(math) => render_markdown_math_block(math, cx),
     }
 }
 
@@ -750,6 +751,10 @@ fn render_markdown_text(parsed_new: &MarkdownParagraph, cx: &mut RenderContext) 
             MarkdownParagraphChunk::Image(image) => {
                 any_element.push(render_markdown_image(image, cx));
             }
+
+            MarkdownParagraphChunk::InlineMath(math) => {
+                any_element.push(render_markdown_inline_math(math, cx));
+            }
         }
     }
 
@@ -870,4 +875,59 @@ impl Render for InteractiveMarkdownElementTooltip {
             )
         })
     }
+}
+
+fn render_markdown_inline_math(
+    math: &crate::markdown_elements::ParsedMarkdownMath,
+    cx: &mut RenderContext,
+) -> AnyElement {
+    let element_id = cx.next_id(&math.source_range);
+
+    if let Some(svg) = &math.svg {
+        div()
+            .id(element_id)
+            .child(render_math_svg(svg.as_ref(), cx))
+            .into_any()
+    } else {
+        // Fallback: render the raw LaTeX in a monospace font
+        div()
+            .id(element_id)
+            .font_family(cx.buffer_font_family.clone())
+            .child(format!("${}$", math.contents))
+            .text_color(cx.text_muted_color)
+            .into_any()
+    }
+}
+
+fn render_markdown_math_block(
+    math: &crate::markdown_elements::ParsedMarkdownMathBlock,
+    cx: &mut RenderContext,
+) -> AnyElement {
+    if let Some(svg) = &math.svg {
+        cx.with_common_p(div())
+            .flex()
+            .justify_center()
+            .py_2()
+            .child(render_math_svg(svg.as_ref(), cx))
+            .into_any()
+    } else {
+        // Fallback: render the raw LaTeX in a monospace font
+        cx.with_common_p(div())
+            .font_family(cx.buffer_font_family.clone())
+            .px_3()
+            .py_3()
+            .bg(cx.code_block_background_color)
+            .rounded_sm()
+            .child(format!("$$\n{}\n$$", math.contents))
+            .text_color(cx.text_muted_color)
+            .into_any()
+    }
+}
+
+fn render_math_svg(svg_content: &str, _cx: &mut RenderContext) -> Div {
+    use gpui::svg;
+    
+    // The SVG from mathjax_svg should be a complete SVG string
+    // We can display it using GPUI's svg rendering
+    div().child(svg().from_source(svg_content))
 }

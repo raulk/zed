@@ -17,6 +17,7 @@ pub enum ParsedMarkdownElement {
     Paragraph(MarkdownParagraph),
     HorizontalRule(Range<usize>),
     Image(Image),
+    MathBlock(ParsedMarkdownMathBlock),
 }
 
 impl ParsedMarkdownElement {
@@ -30,9 +31,11 @@ impl ParsedMarkdownElement {
             Self::Paragraph(text) => match text.get(0)? {
                 MarkdownParagraphChunk::Text(t) => t.source_range.clone(),
                 MarkdownParagraphChunk::Image(image) => image.source_range.clone(),
+                MarkdownParagraphChunk::InlineMath(math) => math.source_range.clone(),
             },
             Self::HorizontalRule(range) => range.clone(),
             Self::Image(image) => image.source_range.clone(),
+            Self::MathBlock(math) => math.source_range.clone(),
         })
     }
 
@@ -48,6 +51,7 @@ pub type MarkdownParagraph = Vec<MarkdownParagraphChunk>;
 pub enum MarkdownParagraphChunk {
     Text(ParsedMarkdownText),
     Image(Image),
+    InlineMath(ParsedMarkdownMath),
 }
 
 #[derive(Debug)]
@@ -339,4 +343,22 @@ impl Image {
     pub fn set_height(&mut self, height: DefiniteLength) {
         self.height = Some(height);
     }
+}
+
+/// A Markdown math expression
+#[derive(Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
+pub struct ParsedMarkdownMath {
+    pub source_range: Range<usize>,
+    pub contents: SharedString,
+    pub svg: Option<SharedString>,
+}
+
+/// A Markdown block math expression
+#[derive(Debug)]
+#[cfg_attr(test, derive(PartialEq))]
+pub struct ParsedMarkdownMathBlock {
+    pub source_range: Range<usize>,
+    pub contents: SharedString,
+    pub svg: Option<SharedString>,
 }

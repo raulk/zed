@@ -602,6 +602,7 @@ prost = "0.9"
 prost-build = "0.9"
 prost-types = "0.9"
 pulldown-cmark = { version = "0.12.0", default-features = false }
+mathjax_svg = "3.2.0"
 quote = "1.0.9"
 rand = "0.9"
 rayon = "1.8"
