@@ -52,6 +52,15 @@ pub struct EditorSettingsContent {
     ///
     /// Default: true
     pub hover_popover_enabled: Option<bool>,
+    /// Require holding a modifier key to trigger the hover popover. When set
+    /// to a modifier, hovering alone will not trigger the popover, and the
+    /// delay is bypassed when the modifier is held.
+    ///
+    /// Possible values: "disabled", "secondary" (Cmd on macOS, Ctrl on
+    /// Linux/Windows; aliases: "cmd", "ctrl"), "alt", "shift", "control".
+    ///
+    /// Default: disabled
+    pub hover_popover_modifier: Option<HoverPopoverModifier>,
     /// Time to wait in milliseconds before showing the informational hover box.
     /// This delay also applies to auto signature help when `auto_signature_help` is enabled.
     ///
@@ -644,6 +653,34 @@ pub enum MultiCursorModifier {
     Alt,
     #[serde(alias = "cmd", alias = "ctrl")]
     CmdOrCtrl,
+}
+
+/// The modifier key required to trigger the hover popover, or disabled.
+/// Used as the value of `hover_popover_modifier`.
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    MergeFrom,
+    PartialEq,
+    Eq,
+    strum::VariantArray,
+    strum::VariantNames,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum HoverPopoverModifier {
+    /// No modifier required; use normal delay-based hover behavior.
+    Disabled,
+    /// Cmd on macOS, Ctrl on Linux and Windows. Also accepts "cmd" and "ctrl".
+    #[serde(alias = "cmd", alias = "ctrl")]
+    Secondary,
+    Alt,
+    Shift,
+    /// On Linux and Windows this is equivalent to "secondary".
+    Control,
 }
 
 /// Whether the editor will scroll beyond the last line.

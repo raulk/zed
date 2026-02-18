@@ -1,13 +1,13 @@
 use core::num;
 
-use gpui::App;
+use gpui::{App, Modifiers};
 use language::CursorShape;
 use project::project_settings::DiagnosticSeverity;
 pub use settings::{
     CompletionDetailAlignment, CurrentLineHighlight, DelayMs, DiffViewStyle, DisplayIn,
     DocumentColorsRenderMode, DoubleClickInMultibuffer, GoToDefinitionFallback, HideMouseMode,
-    MinimapThumb, MinimapThumbBorder, MultiCursorModifier, ScrollBeyondLastLine,
-    ScrollbarDiagnostics, SeedQuerySetting, ShowMinimap, SnippetSortOrder,
+    HoverPopoverModifier, MinimapThumb, MinimapThumbBorder, MultiCursorModifier,
+    ScrollBeyondLastLine, ScrollbarDiagnostics, SeedQuerySetting, ShowMinimap, SnippetSortOrder,
 };
 use settings::{RegisterSetting, RelativeLineNumbers, Settings};
 use ui::scrollbars::{ScrollbarVisibility, ShowScrollbar};
@@ -23,6 +23,7 @@ pub struct EditorSettings {
     pub rounded_selection: bool,
     pub lsp_highlight_debounce: DelayMs,
     pub hover_popover_enabled: bool,
+    pub hover_popover_modifier: Option<HoverPopoverModifier>,
     pub hover_popover_delay: DelayMs,
     pub toolbar: Toolbar,
     pub scrollbar: Scrollbar,
@@ -181,6 +182,25 @@ impl EditorSettings {
     pub fn jupyter_enabled(cx: &App) -> bool {
         EditorSettings::get_global(cx).jupyter.enabled
     }
+
+    /// Returns whether modifier-gated hover is active (a modifier key is configured).
+    pub fn hover_modifier_enabled(&self) -> bool {
+        self.hover_popover_modifier.is_some()
+    }
+
+    /// Returns whether the configured hover modifier key is currently held.
+    /// Returns `false` both when the modifier is not held and when no modifier
+    /// is configured; callers that need to distinguish those cases should call
+    /// `hover_modifier_enabled()` separately.
+    pub fn hover_modifier_held(&self, modifiers: &Modifiers) -> bool {
+        match self.hover_popover_modifier {
+            None | Some(HoverPopoverModifier::Disabled) => false, // Disabled is stripped on resolution; None is the normal path
+            Some(HoverPopoverModifier::Secondary) => modifiers.secondary(),
+            Some(HoverPopoverModifier::Alt) => modifiers.alt,
+            Some(HoverPopoverModifier::Shift) => modifiers.shift,
+            Some(HoverPopoverModifier::Control) => modifiers.control,
+        }
+    }
 }
 
 impl ScrollbarVisibility for EditorSettings {
@@ -208,6 +228,9 @@ impl Settings for EditorSettings {
             rounded_selection: editor.rounded_selection.unwrap(),
             lsp_highlight_debounce: editor.lsp_highlight_debounce.unwrap(),
             hover_popover_enabled: editor.hover_popover_enabled.unwrap(),
+            hover_popover_modifier: editor.hover_popover_modifier.filter(|m| {
+                *m != HoverPopoverModifier::Disabled
+            }),
             hover_popover_delay: editor.hover_popover_delay.unwrap(),
             toolbar: Toolbar {
                 breadcrumbs: toolbar.breadcrumbs.unwrap(),

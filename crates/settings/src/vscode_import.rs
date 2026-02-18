@@ -266,6 +266,7 @@ impl VsCodeSettings {
             horizontal_scroll_margin: None,
             hover_popover_delay: self.read_u64("editor.hover.delay").map(Into::into),
             hover_popover_enabled: self.read_bool("editor.hover.enabled"),
+            hover_popover_modifier: None,
             inline_code_actions: None,
             jupyter: None,
             lsp_document_colors: None,

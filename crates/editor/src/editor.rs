@@ -123,7 +123,7 @@ use gpui::{
     pulsating_between, px, relative, size,
 };
 use hover_links::{HoverLink, HoveredLinkState, find_file};
-use hover_popover::{HoverState, hide_hover};
+use hover_popover::{HoverState, hide_hover, hover_at_immediate};
 use indent_guides::ActiveIndentGuidesState;
 use inlays::{InlaySplice, inlay_hints::InlayHintRefreshReason};
 use itertools::{Either, Itertools};
@@ -8322,18 +8322,41 @@ impl Editor {
 
         self.update_selection_mode(&modifiers, position_map, window, cx);
 
+        let modifier_enabled = EditorSettings::get_global(cx).hover_modifier_enabled();
+        let modifier_held = EditorSettings::get_global(cx).hover_modifier_held(&modifiers);
+
+        if modifier_enabled && !modifier_held {
+            // Dismiss before the hitbox guard so releasing the modifier while the
+            // mouse is outside the text area still hides the popover.
+            hide_hover(self, cx);
+        }
+
         let mouse_position = window.mouse_position();
         if !position_map.text_hitbox.is_hovered(window) {
             return;
         }
 
+        let point_for_position = position_map.point_for_position(mouse_position);
+
         self.update_hovered_link(
-            position_map.point_for_position(mouse_position),
+            point_for_position,
             &position_map.snapshot,
             modifiers,
             window,
             cx,
-        )
+        );
+
+        if modifier_enabled && modifier_held {
+            if let Some(point) = point_for_position.as_valid() {
+                let anchor = position_map
+                    .snapshot
+                    .buffer_snapshot()
+                    .anchor_before(point.to_offset(&position_map.snapshot, Bias::Left));
+                hover_at_immediate(self, Some(anchor), window, cx);
+            } else {
+                hide_hover(self, cx);
+            }
+        }
     }
 
     fn is_cmd_or_ctrl_pressed(modifiers: &Modifiers, cx: &mut Context<Self>) -> bool {

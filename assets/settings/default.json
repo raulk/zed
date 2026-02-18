@@ -120,6 +120,12 @@
   // Whether to show the informational hover box when moving the mouse
   // over symbols in the editor.
   "hover_popover_enabled": true,
+  // Require holding a modifier key to trigger the hover popover. When set to
+  // a modifier, hovering alone will not trigger the popover, and the delay is
+  // bypassed when the modifier is held.
+  // Possible values: "disabled", "secondary" (Cmd on macOS, Ctrl on Linux/Windows;
+  // aliases: "cmd", "ctrl"), "alt", "shift", "control".
+  "hover_popover_modifier": "disabled",
   // Time to wait in milliseconds before showing the informational hover box.
   // This delay also applies to auto signature help when `auto_signature_help` is enabled.
   "hover_popover_delay": 300,

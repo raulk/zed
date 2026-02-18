@@ -1726,7 +1726,7 @@ fn editor_page() -> SettingsPage {
         ]
     }
 
-    fn hover_popover_section() -> [SettingsPageItem; 3] {
+    fn hover_popover_section() -> [SettingsPageItem; 4] {
         [
             SettingsPageItem::SectionHeader("Hover Popover"),
             SettingsPageItem::SettingItem(SettingItem {
@@ -1742,12 +1742,29 @@ fn editor_page() -> SettingsPage {
                 metadata: None,
                 files: USER,
             }),
+            SettingsPageItem::SettingItem(SettingItem {
+                title: "Modifier Key",
+                description: "Require holding a modifier key to trigger the hover popover. When set, hovering alone will not trigger the popover, and the delay is bypassed when the modifier is held.",
+                field: Box::new(SettingField {
+                    json_path: Some("hover_popover_modifier"),
+                    pick: |settings_content| settings_content.editor.hover_popover_modifier.as_ref(),
+                    write: |settings_content, value| {
+                        settings_content.editor.hover_popover_modifier =
+                            match value {
+                                Some(settings::HoverPopoverModifier::Disabled) | None => None,
+                                other => other,
+                            };
+                    },
+                }),
+                metadata: None,
+                files: USER,
+            }),
             // todo(settings ui): add units to this number input
             SettingsPageItem::SettingItem(SettingItem {
                 title: "Delay",
                 description: "Time to wait in milliseconds before showing the informational hover box.",
                 field: Box::new(SettingField {
-                    json_path: Some("hover_popover_enabled"),
+                    json_path: Some("hover_popover_delay"),
                     pick: |settings_content| settings_content.editor.hover_popover_delay.as_ref(),
                     write: |settings_content, value| {
                         settings_content.editor.hover_popover_delay = value;

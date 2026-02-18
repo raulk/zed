@@ -37,7 +37,7 @@ pub const HOVER_POPOVER_GAP: Pixels = px(10.);
 /// Bindable action which uses the most recent selection head to trigger a hover
 pub fn hover(editor: &mut Editor, _: &Hover, window: &mut Window, cx: &mut Context<Editor>) {
     let head = editor.selections.newest_anchor().head();
-    show_hover(editor, head, true, window, cx);
+    show_hover(editor, head, true, true, window, cx);
 }
 
 /// The internal hover action dispatches between `show_hover` or `hide_hover`
@@ -53,7 +53,28 @@ pub fn hover_at(
             return;
         }
         if let Some(anchor) = anchor {
-            show_hover(editor, anchor, false, window, cx);
+            show_hover(editor, anchor, false, false, window, cx);
+        } else {
+            hide_hover(editor, cx);
+        }
+    }
+}
+
+/// Like `hover_at`, but bypasses the configured delay and the same-location
+/// deduplication check. Used when a modifier key is held and the hover should
+/// appear immediately regardless of prior hover state.
+///
+/// Unlike `hover_at`, this does not check keyboard grace: modifier-gated hover
+/// always follows the cursor and must not be intercepted by a prior keyboard hover.
+pub fn hover_at_immediate(
+    editor: &mut Editor,
+    anchor: Option<Anchor>,
+    window: &mut Window,
+    cx: &mut Context<Editor>,
+) {
+    if EditorSettings::get_global(cx).hover_popover_enabled {
+        if let Some(anchor) = anchor {
+            show_hover(editor, anchor, true, false, window, cx);
         } else {
             hide_hover(editor, cx);
         }
@@ -72,7 +93,7 @@ pub fn show_keyboard_hover(
             None
         }
     }) {
-        show_hover(editor, anchor, false, window, cx);
+        show_hover(editor, anchor, false, true, window, cx);
         return true;
     }
 
@@ -88,7 +109,7 @@ pub fn show_keyboard_hover(
             }
         })
     {
-        show_hover(editor, anchor, false, window, cx);
+        show_hover(editor, anchor, false, true, window, cx);
         return true;
     }
 
@@ -233,10 +254,12 @@ fn show_hover(
     editor: &mut Editor,
     anchor: Anchor,
     ignore_timeout: bool,
+    keyboard_grace: bool,
     window: &mut Window,
     cx: &mut Context<Editor>,
 ) -> Option<()> {
     if editor.pending_rename.is_some() {
+        hide_hover(editor, cx);
         return None;
     }
 
@@ -254,25 +277,29 @@ fn show_hover(
         .map(|project| project.read(cx).languages().clone());
     let provider = editor.semantics_provider.clone()?;
 
-    if !ignore_timeout {
-        if same_info_hover(editor, &snapshot, anchor)
+    if !ignore_timeout
+        && (same_info_hover(editor, &snapshot, anchor)
             || same_diagnostic_hover(editor, &snapshot, anchor)
-            || editor.hover_state.diagnostic_popover.is_some()
-        {
-            // Hover triggered from same location as last time. Don't show again.
-            return None;
-        } else {
-            hide_hover(editor, cx);
-        }
+            || editor.hover_state.diagnostic_popover.is_some())
+    {
+        // Hover triggered from same location as last time. Don't show again.
+        return None;
     }
 
-    // Don't request again if the location is the same as the previous request
-    if let Some(triggered_from) = &editor.hover_state.triggered_from
-        && triggered_from
-            .cmp(&anchor, &snapshot.buffer_snapshot())
-            .is_eq()
-    {
-        return None;
+    if !same_info_hover(editor, &snapshot, anchor) {
+        hide_hover(editor, cx);
+    }
+
+    // Don't request again if the location is the same as the previous request.
+    // Skipped when ignore_timeout is true so immediate hover always refreshes.
+    if !ignore_timeout {
+        if let Some(triggered_from) = &editor.hover_state.triggered_from
+            && triggered_from
+                .cmp(&anchor, &snapshot.buffer_snapshot())
+                .is_eq()
+        {
+            return None;
+        }
     }
 
     let hover_popover_delay = EditorSettings::get_global(cx).hover_popover_delay.0;
@@ -396,7 +423,7 @@ fn show_hover(
                     border_color,
                     scroll_handle,
                     background_color,
-                    keyboard_grace: Rc::new(RefCell::new(ignore_timeout)),
+                    keyboard_grace: Rc::new(RefCell::new(keyboard_grace)),
                     anchor,
                     _subscription: subscription,
                 })
@@ -464,7 +491,7 @@ fn show_hover(
                     symbol_range: RangeInEditor::Text(range),
                     parsed_content,
                     scroll_handle,
-                    keyboard_grace: Rc::new(RefCell::new(ignore_timeout)),
+                    keyboard_grace: Rc::new(RefCell::new(keyboard_grace)),
                     anchor: Some(anchor),
                     _subscription: subscription,
                 })
@@ -505,7 +532,7 @@ fn show_hover(
                     symbol_range: RangeInEditor::Text(range),
                     parsed_content,
                     scroll_handle,
-                    keyboard_grace: Rc::new(RefCell::new(ignore_timeout)),
+                    keyboard_grace: Rc::new(RefCell::new(keyboard_grace)),
                     anchor: Some(anchor),
                     _subscription: subscription,
                 });

@@ -24,7 +24,7 @@ use crate::{
     git::blame::{BlameRenderer, GitBlame, GlobalBlameRenderer},
     hover_popover::{
         self, HOVER_POPOVER_GAP, MIN_POPOVER_CHARACTER_WIDTH, MIN_POPOVER_LINE_HEIGHT,
-        POPOVER_RIGHT_OFFSET, hover_at,
+        POPOVER_RIGHT_OFFSET, hide_hover, hover_at, hover_at_immediate,
     },
     inlay_hint_settings,
     mouse_context_menu::{self, MenuPosition},
@@ -1464,12 +1464,26 @@ impl EditorElement {
                 cx,
             );
 
+            let settings = EditorSettings::get_global(cx);
+            let modifier_required = settings.hover_modifier_enabled();
+            let modifier_held = settings.hover_modifier_held(&modifiers);
+
+            if modifier_required && !modifier_held {
+                hide_hover(editor, cx);
+            }
+
             if let Some(point) = point_for_position.as_valid() {
-                let anchor = position_map
-                    .snapshot
-                    .buffer_snapshot()
-                    .anchor_before(point.to_offset(&position_map.snapshot, Bias::Left));
-                hover_at(editor, Some(anchor), window, cx);
+                if !modifier_required || modifier_held {
+                    let anchor = position_map
+                        .snapshot
+                        .buffer_snapshot()
+                        .anchor_before(point.to_offset(&position_map.snapshot, Bias::Left));
+                    if modifier_held {
+                        hover_at_immediate(editor, Some(anchor), window, cx);
+                    } else {
+                        hover_at(editor, Some(anchor), window, cx);
+                    }
+                }
                 Self::update_visible_cursor(editor, point, position_map, window, cx);
             } else {
                 editor.update_inlay_link_and_hover_points(
